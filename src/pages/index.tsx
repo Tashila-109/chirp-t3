@@ -1,18 +1,22 @@
 import { SignInButton, useUser } from "@clerk/nextjs";
-import Head from "next/head";
-import Link from "next/link";
-import Image from "next/image";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import Head from "next/head";
+import Image from "next/image";
 
-import { api } from "~/utils/api";
-import type { RouterOutputs } from "~/utils/api";
+import { useState } from "react";
 import { LoadingPage } from "~/components/loading";
+import type { RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
 
 dayjs.extend(relativeTime);
 
 const CreatePostWizard = () => {
   const { user } = useUser();
+
+  const [input, setInput] = useState("");
+
+  const { mutate } = api.post.create.useMutation();
 
   if (!user) return null;
 
@@ -22,11 +26,17 @@ const CreatePostWizard = () => {
         src={user.profileImageUrl}
         alt="Profile Image"
         className="h-14 w-14 rounded-full"
+        width={56}
+        height={56}
       />
       <input
         placeholder="Type some emojis!"
         className="grow bg-transparent outline-none"
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
       />
+      <button onClick={() => mutate({ content: input })}>Post</button>
     </div>
   );
 };
@@ -88,7 +98,7 @@ export default function Home() {
       <main className="flex h-screen justify-center">
         <div className="h-full w-full border-x border-slate-400 md:max-w-2xl">
           <div className="flex border-b border-slate-400 p-4">
-            {isSignedIn && (
+            {!isSignedIn && (
               <div className="flex justify-center">
                 <SignInButton />
               </div>
