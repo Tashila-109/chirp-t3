@@ -16,7 +16,14 @@ const CreatePostWizard = () => {
 
   const [input, setInput] = useState("");
 
-  const { mutate } = api.post.create.useMutation();
+  const ctx = api.useUtils();
+
+  const { mutate, isLoading: isPosting } = api.post.create.useMutation({
+    onSuccess: () => {
+      setInput("");
+      void ctx.post.getAll.invalidate();
+    },
+  });
 
   if (!user) return null;
 
@@ -35,6 +42,7 @@ const CreatePostWizard = () => {
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
+        disabled={isPosting}
       />
       <button onClick={() => mutate({ content: input })}>Post</button>
     </div>
@@ -55,9 +63,11 @@ const PostView = (props: PostWithUser) => {
         height={56}
       />
       <div className="flex flex-col">
-        <div className="flex gap-1 font-bold text-slate-300">
-          <span>{`@${author.username}`}</span>
-          <span>{` . ${dayjs(post.createdAt).fromNow()}`}</span>
+        <div className="flex gap-1 text-slate-300">
+          <span className="font-bold">{`@${author.username}`}</span>
+          <span className="font-thin">{` . ${dayjs(
+            post.createdAt,
+          ).fromNow()}`}</span>
         </div>
         <span className="text-2xl">{post.content}</span>
       </div>
